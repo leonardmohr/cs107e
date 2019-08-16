@@ -1,0 +1,32 @@
+int backtrace(frame_t f[], int max_frames)
+{
+    uintptr_t *cur_fp;
+    // assembly command to store current frame pointer
+    __asm__("mov %0, fp" : "=r" (cur_fp));
+    // save the calling function's frame pointer
+    uintptr_t *saved_fp = (uintptr_t *) *(cur_fp - 3);
+    int i = 0;
+    while (saved_fp != 0 && i < max_frames) {
+        saved_fp = (uintptr_t *) *(cur_fp - 3);
+        // resume_addr is the saved lr of callee
+        f[i].resume_addr = *(cur_fp - 1);
+        // number of bytes between start of function
+        // and where the function resumes
+        f[i].resume_offset = f[i].resume_addr - 12 - *cur_fp;
+
+        // find where the function name is on the heap
+        uintptr_t name_length = *(uintptr_t *) (*saved_fp - 16);
+        unsigned int name_length_as_int = (unsigned int) name_length;
+        if (name_length_as_int >> 24 == 0xff) {
+            f[i].name = "???";
+        } else {
+            // mask the starting ff of the length
+            unsigned int length = (unsigned int) name_length & 0xffffff;
+            f[i].name = (char *) (name_length - length);
+        }
+
+        cur_fp = saved_fp;
+        i++;
+    }
+    return i;
+}

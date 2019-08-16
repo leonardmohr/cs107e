@@ -1,0 +1,98 @@
+/*
+ * LARSON SCANNER
+ *
+ * Assignment 1 extension.
+ * Author: Elisa Lupin-Jimenez
+ *
+ */
+
+.equ DELAY, 0x3F0000
+.equ DELAY_1, 0X4F000
+.equ START_SHIFT, 20
+.equ LED1, 0x1F
+.equ OUTER_LEDS, 0x11
+.equ INNER_LEDS, 0xA
+.equ NUM_LEDS, 8
+
+// configure GPIO 20-27 for output
+ldr r0, FSEL2
+mov r1, #1
+orr r1, r1, #(1<<3)
+orr r1, r1, #(1<<6)
+orr r1, r1, #(1<<9)
+orr r1, r1, #(1<<12)
+orr r1, r1, #(1<<15)
+orr r1, r1, #(1<<18)
+orr r1, r1, #(1<<21)
+str r1, [r0]
+
+// set LED 1 based on GPIO pin
+mov r1, #(LED1<<START_SHIFT)
+
+// store the direction of movement
+mov r3, #0
+
+// store current LED
+mov r4, #1
+
+// store outer LEDs
+mov r5, #(OUTER_LEDS<<START_SHIFT)
+
+// store inner LEDs
+mov r6, #(INNER_LEDS<<START_SHIFT)
+
+loop: 
+
+mov r8, #DELAY
+cycle:
+
+// all 5 lights are on
+ldr r0, SET0
+str r1, [r0]
+
+// delay
+mov r2, #DELAY_1  
+wait1:
+    subs r2, #1
+    bne wait1
+
+// turn off the outer lights
+ldr r0, CLR0
+and r7, r1, r5
+str r7, [r0] 
+
+// delay
+mov r2, #DELAY_1
+wait2:
+    subs r2, #1
+    bne wait2
+
+// turn off the inner lights
+ldr r0, CLR0
+and r7, r1, r6
+str r7, [r0] 
+
+// delay
+mov r2, #DELAY_1
+wait3:
+    subs r2, #1
+    bne wait3
+
+subs r8, #1
+bne cycle
+
+// set the GPIO stored in r1 low
+ldr r0, CLR0
+str r1, [r0]
+
+
+
+b loop
+
+FSEL0: .word 0x20200000
+FSEL1: .word 0x20200004
+FSEL2: .word 0x20200008
+SET0:  .word 0x2020001C
+SET1:  .word 0x20200020
+CLR0:  .word 0x20200028
+CLR1:  .word 0x2020002C

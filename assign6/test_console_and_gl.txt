@@ -1,0 +1,148 @@
+#include "assert.h"
+#include "timer.h"
+#include "fb.h"
+#include "gl.h"
+#include "console.h"
+#include "printf.h"
+
+/* Note that to use the console, one should only have to
+ * call console_init. To use the graphics library, one
+ * should only have to call gl_init. If your main() requires
+ * more than this, then your code will not pass tests and
+ * will likely have many points deducted. Our GL tests
+ * will call gl_init then invoke operations; our console
+ * tests will call console_init then invoke operations.
+ * To guarantee that tests will pass, make sure to also
+ * run tests for each component separately.
+ */
+
+#define _WIDTH 640
+#define _HEIGHT 512
+
+#define _NROWS 10
+#define _NCOLS 20
+
+static void test_console(void)
+{
+    console_init(_NROWS, _NCOLS);
+
+    console_printf("HELLO\r\n");
+
+    timer_delay(3);
+    console_printf("\f");
+    console_printf("HI\r\n");
+
+    timer_delay(1);
+    console_clear();
+}
+
+static void double_test_gl(void)
+{
+    gl_init(_WIDTH, _HEIGHT, GL_DOUBLEBUFFER);
+    gl_clear(gl_color(0, 0xEF, 0xEF));
+    // should hang off the right edge of display
+    gl_draw_string(_WIDTH - 20, 10, "help me", GL_BLUE);
+    gl_draw_rect(100, _HEIGHT - 10, 100, 50, GL_RED);
+    gl_swap_buffer();
+    timer_delay_ms(1000);
+
+    gl_clear(gl_color(0, 0x22, 0x22));
+    gl_draw_rect(_WIDTH/2, _HEIGHT/2, 20, 20, GL_BLUE);
+    gl_draw_string(300, 200, "i am here", GL_MAGENTA);
+    gl_swap_buffer();
+    timer_delay_ms(1000);
+
+    gl_draw_char(_WIDTH/2, _HEIGHT/2, 'm', GL_YELLOW);
+    gl_swap_buffer();
+}
+
+static void single_buffer_test_gl(void)
+{
+    gl_init(_WIDTH, _HEIGHT, GL_SINGLEBUFFER);
+    gl_clear(gl_color(0xBF, 0xBF, 0xBF));
+    gl_draw_string(_WIDTH/2, _HEIGHT/2, "hello world, this is a test test test", GL_GREEN);
+    gl_draw_char(100, 100, 'B', GL_GREEN);
+    // does nothing
+    gl_swap_buffer();
+    gl_draw_char(200, 200, 'C', GL_GREEN);
+}
+
+static void test_gl(void)
+{
+    gl_init(_WIDTH, _HEIGHT, GL_DOUBLEBUFFER);
+
+    gl_clear(gl_color(0xFF, 0, 0xFF)); // Background should be purple.
+
+    // Draw an amber pixel at an arbitrary spot.
+    gl_draw_pixel(_WIDTH/3, _HEIGHT/3, GL_AMBER);
+    assert(gl_read_pixel(_WIDTH/3, _HEIGHT/3) == GL_AMBER);
+
+    // Basic rectangle should be blue in center of screen
+    gl_draw_rect(_WIDTH/2 - 20, _HEIGHT/2 - 20, 40, 40, GL_BLUE);
+
+    // Should write a single character
+    gl_draw_char(60, 10, 'A', GL_BLUE);
+
+    gl_swap_buffer();
+}
+
+void simple_test_console(void)
+{
+    console_init(_NROWS, _NCOLS);
+
+    console_printf("hi");
+    console_printf("hey");
+    timer_delay_ms(1000);
+
+    console_clear();
+    console_printf("sup\n");
+    console_printf("fren");
+    timer_delay_ms(1000);
+
+    console_clear();
+    console_printf("I've been thinking. When life gives you lemons? Don't make lemonade. Make life take the lemons back! Get mad! I don't want your dang lemons! What am I supposed to do with these?");
+    timer_delay_ms(1000);
+
+    console_clear();
+}
+
+void backspace_test_console(void)
+{
+    console_init(_NROWS, _NCOLS);
+
+    console_printf("abcd");
+    console_printf("\b");
+    console_printf("e");
+    timer_delay_ms(1000);
+
+    console_clear();
+}
+
+void scroll_test_console(void)
+{
+    console_init(_NROWS, _NCOLS);
+    for (int i = 0; i < 26; i++) {
+        console_printf("%c\n", 'a' + i);
+    }
+}
+
+void main(void)
+{
+   /* simple_test_console();
+    backspace_test_console();
+    test_console();*/
+    scroll_test_console();
+    /*test_gl();
+    timer_delay_ms(1000);
+    double_test_gl();
+    timer_delay_ms(1000);
+    single_buffer_test_gl();*/
+    
+
+    /* TODO: Add tests here to test your graphics library and console.
+       For the framebuffer and graphics libraries, make sure to test
+       single & double buffering and drawing/writing off the right or
+       bottom edge of the frame buffer.
+       For the console, make sure to test wrap-around and scrolling.
+    */
+}

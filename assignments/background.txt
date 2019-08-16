@@ -1,0 +1,19 @@
+1. 
+The bitwise OR operation on 0x0f and 0xff is: 0xff, or 255 in decimal notation.
+Left-shifted by 24 results in 0xff000000
+
+2. 
+V = I*R (solving for I)
+3 = I * 1500
+I = 0.002
+
+2 milliamperes will flow through
+
+3. 
+Name of file in /etc: "memmap"
+Number of bytes: 240
+There is 1 file and 2 directories
+("." referencing /etc and ".." referencing the directory containing /etc)
+I used "cd" to change directories, "find . -name 'etc' -print" to find the 
+file path leading to /etc, and "ls -l" to see what directories and files are 
+contained in /etc along with the number of bytes that the file takes up.
